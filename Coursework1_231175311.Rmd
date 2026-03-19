@@ -1,0 +1,93 @@
+---
+title: "Retail Sales Forecasting" 
+subtitle: "Retail sales Forecasting with Meta's Prophet" 
+author: Yuchen Wang 
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: spacelab 
+    highlight: tango
+---
+
+```{r, echo=FALSE}
+# This code will display the QMUL logo at the top right of the page
+# Do not change this code
+htmltools::img(src = knitr::image_uri("images/QMlogo.png"),
+               alt = 'logo',
+               style = 'position:absolute; top:0; right:0; padding:10px; width:20%;')
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+Sys.setlocale("LC_TIME", "English")
+```
+
+# Introduction
+This project forecasts future retail sales in the US by Meta's Prophet.
+
+
+# Data
+Read monthly retail sales data between 1 January 2016 and 1 January 2026 and convert it into a dataframe with time column *ds* and data column *y*
+```{r, warning=FALSE, message=FALSE}
+library(prophet)
+
+data_retailsales <- read.csv("data/RSAFS.csv")
+
+prophet_data_retailsales <- data.frame(
+  ds = as.Date(data_retailsales$observation_date),
+  y = as.numeric(data_retailsales$RSAFS)
+)
+```
+
+# Time series plot
+Plot the diagram of retail sales between 1 January 2016 and 1 January 2026.
+```{r}
+plot(prophet_data_retailsales$ds, prophet_data_retailsales$y, type = "l",
+     main = "Retail Sales Time Series",
+     xlab = "Date", ylab = "Retail Sales")
+```
+
+
+The series shows an overall upward trend over time.
+
+# Forecast
+Build a prophet model and forecast the future data for the next 12 months
+```{r, warning=FALSE, message=FALSE}
+model_retailsales <- prophet(prophet_data_retailsales)
+
+future_retailsales <- make_future_dataframe(
+  model_retailsales,
+  periods = 12,
+  freq = "month"
+)
+
+forecast_retailsales <- predict(model_retailsales, future_retailsales)
+```
+
+# Forecast plot
+Plot the diagram of forecast retail sales
+```{r}
+plot(model_retailsales, forecast_retailsales)
+```
+
+
+The plot shows the forecast for the next 12 months and the uncertainty interval in blue. It suggests that retail sales continue to increase over time.
+
+# Forecast components
+Plot the estimated trend and seasonal pattern
+```{r, warning=FALSE, message=FALSE}
+prophet_plot_components(model_retailsales, forecast_retailsales)
+```
+
+
+The first plot shows a long run trend that retail sales generally incease over time. 
+The second plot shows a seasonal pattern that repeats each year.
+
+
+
+# Reference
+Meta's Prophet Documentary: <https://facebook.github.io/prophet/docs/quick_start.html#r-api>
+Retail Sales dataset: <https://fred.stlouisfed.org/series/RSAFS>
+
+
+
